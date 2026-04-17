@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <script>
+      (function () {
+        try {
+          var s = localStorage.getItem('mms-theme')
+          var d =
+            s === 'light' || s === 'dark'
+              ? s
+              : window.matchMedia('(prefers-color-scheme: light)').matches
+                ? 'light'
+                : 'dark'
+          document.documentElement.dataset.theme = d
+        } catch (e) {
+          document.documentElement.dataset.theme = 'dark'
+        }
+      })()
+    </script>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Anton&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="icon" href="/sutta.png" />
+    <link rel="apple-touch-icon" href="/sutta.png" />
+    <link rel="manifest" href="/manifest.json" />
+    <meta name="theme-color" content="#0f0f0f" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta
+      name="apple-mobile-web-app-status-bar-style"
+      content="black-translucent"
+    />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, viewport-fit=cover"
+    />
+    <script>
+      ;(function () {
+        function mmsSyncViewport() {
+          var root = document.documentElement
+          var vv = window.visualViewport
+          var innerH = window.innerHeight || 0
+          var clientH = root.clientHeight || 0
+          if (vv) {
+            root.style.setProperty('--mms-vv-top', vv.offsetTop + 'px')
+            root.style.setProperty('--mms-vv-left', vv.offsetLeft + 'px')
+            root.style.setProperty('--mms-vv-width', vv.width + 'px')
+            root.style.setProperty('--mms-vv-height', vv.height + 'px')
+            var span = Math.max(
+              innerH,
+              clientH,
+              vv.height + vv.offsetTop,
+              vv.height,
+            )
+            root.style.setProperty(
+              '--mms-app-min-h',
+              Math.ceil(span) + 3 + 'px',
+            )
+          } else {
+            root.style.setProperty('--mms-vv-top', '0px')
+            root.style.setProperty('--mms-vv-left', '0px')
+            root.style.setProperty('--mms-vv-width', '100%')
+            var h = Math.max(innerH, clientH)
+            root.style.setProperty('--mms-vv-height', h + 'px')
+            root.style.setProperty(
+              '--mms-app-min-h',
+              Math.ceil(h) + 3 + 'px',
+            )
+          }
+        }
+        mmsSyncViewport()
+        window.addEventListener('resize', mmsSyncViewport)
+        window.addEventListener('orientationchange', function () {
+          setTimeout(mmsSyncViewport, 150)
+        })
+        window.addEventListener('pageshow', mmsSyncViewport)
+        if (window.visualViewport) {
+          window.visualViewport.addEventListener('resize', mmsSyncViewport)
+          window.visualViewport.addEventListener('scroll', mmsSyncViewport)
+        }
+      })()
+    </script>
+    <title>MapMySutta</title>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

@@ -1,0 +1,314 @@
+@import 'tailwindcss';
+@import 'leaflet/dist/leaflet.css';
+
+/* Theme tokens: resolved via html[data-theme] */
+[data-theme='dark'] {
+  color-scheme: dark;
+  --mms-surface-900: #0f0f0f;
+  --mms-surface-800: #1a1a1a;
+  --mms-surface-700: #242424;
+  --mms-accent: #e8cf9a;
+  --mms-accent-dim: #b89a5c;
+  --mms-foreground: #eaeaea;
+  --mms-muted: #9a9a9a;
+  --mms-on-accent: #0f0f0f;
+  --mms-border: rgb(255 255 255 / 0.1);
+  --mms-border-subtle: rgb(255 255 255 / 0.06);
+  --mms-handle: rgb(255 255 255 / 0.15);
+  --mms-backdrop: rgb(0 0 0 / 0.55);
+  --mms-sheet-shadow: 0 -8px 40px rgb(0 0 0 / 0.45);
+  --mms-float-shadow: 0 4px 24px rgb(0 0 0 / 0.35);
+  --mms-fab-shadow: 0 8px 32px rgb(0 0 0 / 0.4);
+  --mms-pick-banner-shadow: 0 8px 32px rgb(0 0 0 / 0.5);
+  --mms-accent-glow: 0 0 20px rgb(232 207 154 / 0.09);
+  --mms-accent-glow-strong: 0 0 24px rgb(232 207 154 / 0.11);
+  --mms-leaflet-bg: #0f0f0f;
+}
+
+[data-theme='light'] {
+  color-scheme: light;
+  --mms-surface-900: #e6e4df;
+  --mms-surface-800: #faf8f4;
+  --mms-surface-700: #f0ece5;
+  --mms-accent: #d4b870;
+  --mms-accent-dim: #9e8540;
+  --mms-foreground: #1a1a1a;
+  --mms-muted: #5c5a55;
+  --mms-on-accent: #1a1a1a;
+  --mms-border: rgb(0 0 0 / 0.09);
+  --mms-border-subtle: rgb(0 0 0 / 0.06);
+  --mms-handle: rgb(0 0 0 / 0.12);
+  --mms-backdrop: rgb(0 0 0 / 0.28);
+  --mms-sheet-shadow: 0 -8px 40px rgb(0 0 0 / 0.06);
+  --mms-float-shadow: 0 4px 20px rgb(0 0 0 / 0.06);
+  --mms-fab-shadow: 0 8px 28px rgb(0 0 0 / 0.08);
+  --mms-pick-banner-shadow: 0 8px 28px rgb(0 0 0 / 0.1);
+  --mms-accent-glow: 0 0 20px rgb(212 184 112 / 0.12);
+  --mms-accent-glow-strong: 0 0 24px rgb(212 184 112 / 0.15);
+  --mms-leaflet-bg: #ebe8e2;
+}
+
+/* Defaults before inline viewport script runs */
+:root {
+  --mms-vv-top: 0px;
+  --mms-vv-left: 0px;
+  --mms-vv-width: 100%;
+  --mms-vv-height: 100dvh;
+}
+
+@theme {
+  --color-surface-900: var(--mms-surface-900);
+  --color-surface-800: var(--mms-surface-800);
+  --color-surface-700: var(--mms-surface-700);
+  --color-accent: var(--mms-accent);
+  --color-accent-dim: var(--mms-accent-dim);
+  --color-foreground: var(--mms-foreground);
+  --color-muted: var(--mms-muted);
+  --color-on-accent: var(--mms-on-accent);
+  --color-border: var(--mms-border);
+  --color-border-subtle: var(--mms-border-subtle);
+  --font-sans: ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji',
+    'Segoe UI Emoji';
+  --font-logo: 'Anton', ui-sans-serif, system-ui, sans-serif;
+}
+
+@layer base {
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
+  }
+
+  html {
+    background-color: var(--mms-surface-900);
+    height: 100%;
+    width: 100%;
+    max-width: 100%;
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+    min-height: 100dvh;
+    min-height: -webkit-fill-available;
+    min-height: 100lvh;
+    min-height: max(100lvh, var(--mms-app-min-h, 0px));
+  }
+
+  body {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    width: 100%;
+    max-width: 100%;
+    overflow: hidden;
+    min-height: 100dvh;
+    min-height: -webkit-fill-available;
+    min-height: 100lvh;
+    min-height: max(100lvh, var(--mms-app-min-h, 0px));
+    background-color: var(--mms-surface-900);
+    color: var(--mms-foreground);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  #root {
+    height: 100%;
+    width: 100%;
+    max-width: 100%;
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+    min-height: 100dvh;
+    min-height: -webkit-fill-available;
+    min-height: 100lvh;
+    min-height: max(100lvh, var(--mms-app-min-h, 0px));
+  }
+
+  /* Full-screen map: stop page rubber-banding / scroll revealing white behind the app */
+  html.mms-map-route {
+    height: 100%;
+    min-height: 100dvh;
+    /* iOS Safari: fill when toolbar shows/hides (avoids a short “letterboxed” map) */
+    min-height: -webkit-fill-available;
+    min-height: 100lvh;
+    min-height: max(100lvh, var(--mms-app-min-h, 0px));
+    overscroll-behavior: none;
+    background-color: var(--mms-leaflet-bg);
+  }
+
+  html.mms-map-route body {
+    height: 100%;
+    min-height: 100dvh;
+    min-height: -webkit-fill-available;
+    min-height: 100lvh;
+    min-height: max(100lvh, var(--mms-app-min-h, 0px));
+    overflow: hidden;
+    overscroll-behavior: none;
+    background-color: var(--mms-leaflet-bg);
+  }
+
+  html.mms-map-route #root {
+    height: 100%;
+    min-height: 100dvh;
+    min-height: -webkit-fill-available;
+    min-height: 100lvh;
+    min-height: max(100lvh, var(--mms-app-min-h, 0px));
+    overflow: hidden;
+    overscroll-behavior: none;
+    background-color: var(--mms-leaflet-bg);
+  }
+
+  /*
+   * Tap-to-place pin: sheet closes so BottomSheet lock is gone — freeze viewport
+   * on phones (iOS rubber-band / background scroll) while picking on the map.
+   */
+  html.mms-map-route.mms-map-pick-lock {
+    overscroll-behavior: none;
+  }
+
+  html.mms-map-route.mms-map-pick-lock body {
+    position: fixed;
+    inset: 0;
+    width: 100%;
+    max-width: 100%;
+    height: 100%;
+    overflow: hidden !important;
+    overscroll-behavior: none;
+  }
+
+  html.mms-map-route.mms-map-pick-lock #root {
+    overflow: hidden !important;
+    overscroll-behavior: none;
+  }
+
+  .leaflet-container {
+    font-family: inherit;
+    background: var(--mms-leaflet-bg) !important;
+    height: 100% !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    min-height: 100% !important;
+    outline: none;
+    touch-action: none;
+    overscroll-behavior: none;
+  }
+
+  /* Tile gaps / pan edges: never show browser default white */
+  .leaflet-pane,
+  .leaflet-map-pane,
+  .leaflet-tile-pane {
+    background-color: transparent !important;
+  }
+
+  .leaflet-tile-pane .leaflet-layer {
+    background-color: var(--mms-leaflet-bg);
+  }
+}
+
+/* App / map / splash roots — JS sets --mms-app-min-h from visualViewport for iOS seams */
+.main-container {
+  position: fixed;
+  inset: 0;
+  height: 100dvh;
+  width: 100vw;
+  max-width: 100%;
+  min-height: 100dvh;
+  min-height: -webkit-fill-available;
+  min-height: 100lvh;
+  min-height: max(100lvh, var(--mms-app-min-h, 0px));
+}
+
+.mms-viewport-fill {
+  width: 100%;
+  max-width: 100%;
+  height: 100%;
+  min-height: 100%;
+  min-height: 100dvh;
+  min-height: -webkit-fill-available;
+  min-height: 100lvh;
+  min-height: max(100lvh, var(--mms-app-min-h, 0px));
+}
+
+/* Floating UI only — not the map */
+.mms-safe-top {
+  padding-top: env(safe-area-inset-top, 0px);
+}
+
+.mms-safe-bottom {
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+/* iOS Safari: align to visualViewport (layout vs visual viewport gap) */
+.mms-visual-viewport-layer,
+.mms-map-fixed {
+  position: fixed;
+  top: var(--mms-vv-top, 0px);
+  left: var(--mms-vv-left, 0px);
+  width: var(--mms-vv-width, 100%);
+  height: var(--mms-vv-height, 100dvh);
+  box-sizing: border-box;
+}
+
+@keyframes mms-sheet-enter {
+  from {
+    transform: translateY(100%);
+    opacity: 0.85;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.mms-sheet-panel {
+  animation: mms-sheet-enter 0.36s cubic-bezier(0.25, 0.8, 0.25, 1) both;
+  box-shadow: var(--mms-sheet-shadow);
+}
+
+.mms-grit-overlay {
+  pointer-events: none;
+  z-index: 9999;
+  mix-blend-mode: overlay;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+[data-theme='dark'] .mms-grit-overlay {
+  opacity: 0.045;
+}
+
+[data-theme='light'] .mms-grit-overlay {
+  opacity: 0.04;
+  mix-blend-mode: multiply;
+}
+
+/* Bottom-left zoom (+/−): nudge up from the edge (above home indicator / FAB row) */
+.leaflet-bottom.leaflet-left {
+  margin-bottom: calc(env(safe-area-inset-bottom, 0px) + 3.3rem);
+}
+
+/* Zoom +/−: black control, light glyphs */
+.leaflet-control-zoom.leaflet-bar {
+  box-shadow: 0 2px 10px rgb(0 0 0 / 0.45);
+  border: 1px solid rgb(255 255 255 / 0.12);
+}
+
+.leaflet-control-zoom.leaflet-bar a {
+  background-color: #0a0a0a;
+  color: #eaeaea;
+  border-color: rgb(255 255 255 / 0.12);
+}
+
+.leaflet-control-zoom.leaflet-bar a:hover,
+.leaflet-control-zoom.leaflet-bar a:focus {
+  background-color: #141414;
+  color: #fff;
+}
+
+.leaflet-control-zoom.leaflet-bar a.leaflet-disabled {
+  background-color: #141414;
+  color: #555;
+}
+
+.leaflet-div-icon.mms-leaflet-marker {
+  background: transparent !important;
+  border: none !important;
+}
