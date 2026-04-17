@@ -1,4 +1,9 @@
-const API_PREFIX = '/api/v1'
+function apiV1Prefix(): string {
+  const base = import.meta.env.VITE_API_BASE_URL?.trim().replace(/\/$/, '') ?? ''
+  return base ? `${base}/api/v1` : '/api/v1'
+}
+
+const API_PREFIX = apiV1Prefix()
 
 export class ApiError extends Error {
   status: number
