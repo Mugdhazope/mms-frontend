@@ -167,10 +167,24 @@ export function MapScreen() {
     return raw.charAt(0).toUpperCase() + raw.slice(1)
   }, [username])
   const identityChipWidthPx = useMemo(() => {
-    if (identityFlipped) return 138
+    if (!identityFlipped) return 138
     const label = `MMS for ${chipName}`
     return Math.min(320, Math.max(112, label.length * 10 + 26))
   }, [chipName, identityFlipped])
+
+  /** Default face is logo + MapMySutta; periodically flip to the username side. */
+  useEffect(() => {
+    let timeoutId: ReturnType<typeof window.setTimeout>
+    const schedule = () => {
+      const delayMs = 10_000 + Math.random() * 10_000
+      timeoutId = window.setTimeout(() => {
+        setIdentityFlipped((v) => !v)
+        schedule()
+      }, delayMs)
+    }
+    schedule()
+    return () => window.clearTimeout(timeoutId)
+  }, [])
 
   const onSelectSpot = useCallback((id: string) => {
     setDetailsSpotId(id)
@@ -300,15 +314,8 @@ export function MapScreen() {
             aria-label="Toggle identity card"
           >
             <span
-              className="absolute inset-0 flex items-center justify-center rounded-full border border-border/80 bg-surface-900/80 px-4 py-2 text-center text-sm font-bold tracking-wide text-foreground backdrop-blur-md [backface-visibility:hidden] transition-transform duration-300"
-              style={{ transform: identityFlipped ? 'rotateY(180deg)' : 'rotateY(0deg)' }}
-            >
-              <span className="text-yellow-300">MMS</span>
-              <span>&nbsp;for {chipName}</span>
-            </span>
-            <span
               className="absolute inset-0 flex items-center justify-center gap-1.5 rounded-full border border-border/80 bg-surface-900/80 px-2 py-1.5 text-[11px] font-semibold text-foreground/95 backdrop-blur-md [backface-visibility:hidden] transition-transform duration-300"
-              style={{ transform: identityFlipped ? 'rotateY(360deg)' : 'rotateY(180deg)' }}
+              style={{ transform: identityFlipped ? 'rotateY(180deg)' : 'rotateY(0deg)' }}
             >
               <img
                 src={suttaImg}
@@ -319,6 +326,13 @@ export function MapScreen() {
                 decoding="async"
               />
               <span className="leading-none">MapMySutta</span>
+            </span>
+            <span
+              className="absolute inset-0 flex items-center justify-center rounded-full border border-border/80 bg-surface-900/80 px-4 py-2 text-center text-sm font-bold tracking-wide text-foreground backdrop-blur-md [backface-visibility:hidden] transition-transform duration-300"
+              style={{ transform: identityFlipped ? 'rotateY(360deg)' : 'rotateY(180deg)' }}
+            >
+              <span className="text-yellow-300">MMS</span>
+              <span>&nbsp;for {chipName}</span>
             </span>
           </button>
         </div>

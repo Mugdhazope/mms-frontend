@@ -1,7 +1,8 @@
+import { USERNAME_PATTERN_RE } from '@/lib/validation/inputLimits'
+
 const STORAGE_KEY = 'mms-engagement-v1'
 const DAILY_NOTIFICATION_LIMIT = 3
 const RECENT_ACTIVITY_WINDOW_MS = 1000 * 60 * 60 * 48
-const USERNAME_RE = /^[a-z0-9_]{3,20}$/
 
 type NotificationBudget = {
   dayKey: string
@@ -14,6 +15,8 @@ type EngagementStore = {
   karma: number
   lastActiveAt: number
   notificationBudget: NotificationBudget
+  /** Signed API token; prefer sending Authorization Bearer over raw device id. */
+  accessToken: string | null
 }
 
 export type EngagementEventType =
@@ -89,7 +92,7 @@ function normalizeDeviceId(value: unknown): string {
 function normalizeUsernameValue(value: unknown): string | null {
   if (typeof value !== 'string') return null
   const normalized = value.trim().toLowerCase()
-  if (!USERNAME_RE.test(normalized)) return null
+  if (!USERNAME_PATTERN_RE.test(normalized)) return null
   return normalized
 }
 
@@ -102,6 +105,7 @@ function readStore(): EngagementStore {
       karma: 0,
       lastActiveAt: now,
       notificationBudget: { dayKey: dayKey(now), used: 0 },
+      accessToken: null,
     }
   }
   try {
@@ -109,6 +113,10 @@ function readStore(): EngagementStore {
     if (!raw) throw new Error('missing store')
     const parsed = JSON.parse(raw) as Partial<EngagementStore>
     const now = Date.now()
+    const accessTok =
+      typeof parsed.accessToken === 'string' && parsed.accessToken.trim()
+        ? parsed.accessToken.trim()
+        : null
     return {
       deviceId: normalizeDeviceId(parsed.deviceId),
       username: normalizeUsernameValue(parsed.username),
@@ -121,6 +129,7 @@ function readStore(): EngagementStore {
         typeof parsed.notificationBudget.used === 'number'
           ? parsed.notificationBudget
           : { dayKey: dayKey(now), used: 0 },
+      accessToken: accessTok,
     }
   } catch {
     const now = Date.now()
@@ -130,6 +139,7 @@ function readStore(): EngagementStore {
       karma: 0,
       lastActiveAt: now,
       notificationBudget: { dayKey: dayKey(now), used: 0 },
+      accessToken: null,
     }
   }
 }
@@ -178,6 +188,7 @@ export function resetDeviceId(): string {
     ...prev,
     deviceId: nextId,
     username: null,
+    accessToken: null,
     lastActiveAt: Date.now(),
   }))
   return nextId
@@ -215,13 +226,27 @@ export function addKarma(delta: number): number {
 }
 
 /** Overwrite local karma from Django after register / sync. */
-export function syncDeviceFromServer(karma: number, username?: string): void {
+export function getAccessToken(): string | null {
+  return getStore().accessToken
+}
+
+export function syncDeviceFromServer(
+  karma: number,
+  username?: string,
+  accessToken?: string | null,
+): void {
   const normalized = username === undefined ? undefined : normalizeUsernameValue(username)
   updateStore((prev) => ({
     ...prev,
     username: normalized ?? prev.username,
     karma: Math.max(0, Math.round(karma)),
     lastActiveAt: Date.now(),
+    accessToken:
+      typeof accessToken === 'string' && accessToken.trim()
+        ? accessToken.trim()
+        : accessToken === null
+          ? null
+          : prev.accessToken,
   }))
 }
 

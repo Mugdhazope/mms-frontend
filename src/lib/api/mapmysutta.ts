@@ -5,6 +5,8 @@ export type DeviceProfileDto = {
   username: string
   karma: number
   trust_score?: number
+  /** Signed token for Authorization: Bearer (preferred over raw device id). */
+  access_token?: string
 }
 
 export type CaptchaPayload = {

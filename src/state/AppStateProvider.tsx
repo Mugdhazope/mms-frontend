@@ -28,6 +28,11 @@ import {
   uiTagsToApi,
 } from '@/lib/api/mappers'
 import { executeRecaptchaV3, isRecaptchaConfigured } from '@/lib/recaptcha'
+import {
+  isValidGeoCoords,
+  validateNoteInput,
+  validateSpotName,
+} from '@/lib/validation/inputLimits'
 import { isReasonableUsualTimeHHMM, normalizeTimeInputValue } from '@/lib/usualTiming'
 import type { Spot, SpotFilters, SpotTag } from '@/types/spot'
 import { ManualCaptchaModal } from '@/components/ManualCaptchaModal'
@@ -175,7 +180,7 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
           if (!ignore) setDeviceId(normalized)
         }
         if (!ignore) {
-          syncDeviceFromServer(profile.karma, profile.username)
+          syncDeviceFromServer(profile.karma, profile.username, profile.access_token)
         }
       } catch (e) {
         if (e instanceof ApiError && e.status === 400) {
@@ -243,7 +248,7 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
     if (USE_DEMO_SEED) return
     try {
       const profile = await getDevice(deviceId)
-      syncDeviceFromServer(profile.karma, profile.username)
+      syncDeviceFromServer(profile.karma, profile.username, profile.access_token)
     } catch {
       /* ignore */
     }
@@ -284,6 +289,15 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
       lat: number
       lng: number
     }) => {
+      const nameErr = validateSpotName(input.name)
+      if (nameErr) {
+        postFeedback(nameErr)
+        return
+      }
+      if (!isValidGeoCoords(input.lat, input.lng)) {
+        postFeedback('Invalid map coordinates.')
+        return
+      }
       if (USE_DEMO_SEED) {
         const id = `u-${Date.now()}`
         const newSpot: Spot = {
@@ -476,8 +490,12 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
 
   const addNote = useCallback(
     (id: string, text: string) => {
+      const noteErr = validateNoteInput(text)
+      if (noteErr) {
+        postFeedback(noteErr)
+        return
+      }
       const t = text.trim()
-      if (!t) return
 
       if (USE_DEMO_SEED) {
         setSpots((prev) =>

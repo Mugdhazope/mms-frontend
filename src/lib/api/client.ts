@@ -1,3 +1,5 @@
+import { getAccessToken } from '@/state/engagement'
+
 function apiV1Prefix(): string {
   const base = import.meta.env.VITE_API_BASE_URL?.trim().replace(/\/$/, '') ?? ''
   return base ? `${base}/api/v1` : '/api/v1'
@@ -36,6 +38,11 @@ export async function apiFetch<T>(
     !headers.has('Content-Type')
   ) {
     headers.set('Content-Type', 'application/json')
+  }
+
+  const bearer = getAccessToken()
+  if (bearer) {
+    headers.set('Authorization', `Bearer ${bearer}`)
   }
 
   if (!omitDeviceId && deviceId) {

@@ -3,6 +3,7 @@ import { useState } from 'react'
 import suttaImg from '@/assets/sutta.png'
 import { ApiError } from '@/lib/api/client'
 import { identifyDevice } from '@/lib/api/mapmysutta'
+import { validateUsernameInput } from '@/lib/validation/inputLimits'
 import { getDeviceId, setUsername, syncDeviceFromServer } from '@/state/engagement'
 
 import { ThemeToggle } from './ThemeToggle'
@@ -22,12 +23,17 @@ export function UsernameOnboardingScreen({ onIdentified }: UsernameOnboardingScr
       setError('Please choose a username.')
       return
     }
+    const usernameError = validateUsernameInput(usernameDraft)
+    if (usernameError) {
+      setError(usernameError)
+      return
+    }
     setSubmitting(true)
     setError(null)
     try {
       const profile = await identifyDevice(getDeviceId(), normalized)
       setUsername(profile.username)
-      syncDeviceFromServer(profile.karma, profile.username)
+      syncDeviceFromServer(profile.karma, profile.username, profile.access_token)
       onIdentified(profile.username)
     } catch (e) {
       if (e instanceof ApiError && typeof e.body === 'object' && e.body !== null) {
