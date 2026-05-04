@@ -67,7 +67,7 @@ export function UsernameOnboardingScreen({ onIdentified }: UsernameOnboardingScr
         <input
           value={usernameDraft}
           onChange={(e) => setUsernameDraft(e.target.value)}
-          placeholder="mugdha"
+          placeholder="username"
           autoCapitalize="none"
           autoCorrect="off"
           className="mt-5 w-full rounded-xl border border-border bg-surface-900/80 px-4 py-3 text-base text-foreground placeholder:text-muted/60 outline-none ring-accent/30 focus:ring-2"
