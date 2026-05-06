@@ -1,9 +1,9 @@
 import { minutesSinceOpenConfirmation } from '@/lib/spotRecency'
 import type { Spot, SpotFilters } from '@/types/spot'
 
-/** Default map filters: open-now only (immersive first paint). */
+/** Default map filters: show all spots until user opts in. */
 export const defaultSpotFilters: SpotFilters = {
-  openRightNow: true,
+  openRightNow: false,
   justConfirmed: false,
   openLateFilter: false,
   usuallyWorks: false,
